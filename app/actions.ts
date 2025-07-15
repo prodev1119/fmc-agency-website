@@ -1,8 +1,8 @@
 "use server"
 
 import { Resend } from "resend"
-import { createServerSupabaseClient } from "@/lib/supabase" // Import server-side Supabase client
-import { revalidatePath } from "next/cache" // Import revalidatePath
+import { createServerSupabaseClient } from "@/lib/supabase"
+import { revalidatePath } from "next/cache"
 
 // Initialize Resend conditionally to avoid error if API key is missing
 let resend: Resend | null = null
@@ -171,7 +171,9 @@ export async function addJobPosting(prevState: any, formData: FormData) {
   }
 }
 
-export async function deleteJobPosting(prevState: any, formData: FormData) {
+// Corrected signature for deleteJobPosting
+export async function deleteJobPosting(formData: FormData) {
+  // Removed prevState
   console.log("Attempting to delete job posting...")
   const supabase = createServerSupabaseClient()
   const id = formData.get("id") as string
@@ -191,7 +193,6 @@ export async function deleteJobPosting(prevState: any, formData: FormData) {
 
     if (error) {
       console.error("Supabase delete error:", error.message)
-      // Log the full error object for more details
       console.error("Supabase delete error details:", error)
       return {
         success: false,
@@ -200,7 +201,7 @@ export async function deleteJobPosting(prevState: any, formData: FormData) {
     }
 
     console.log(`Job posting with ID ${id} deleted successfully.`)
-    revalidatePath("/advertisement") // Revalidate the page to show updated list
+    revalidatePath("/advertisement")
 
     return {
       success: true,
