@@ -1,8 +1,8 @@
 "use server"
 
 import { Resend } from "resend"
-import { createServerSupabaseClient } from "@/lib/supabase" // Import server-side Supabase client
-import { revalidatePath } from "next/cache" // Import revalidatePath
+import { createServerSupabaseClient } from "@/lib/supabase"
+import { revalidatePath } from "next/cache"
 
 // Initialize Resend conditionally to avoid error if API key is missing
 let resend: Resend | null = null
@@ -167,6 +167,51 @@ export async function addJobPosting(prevState: any, formData: FormData) {
     return {
       success: false,
       message: `Failed to submit job posting: ${error.message || "An unexpected error occurred."}`,
+    }
+  }
+}
+
+// Corrected signature for deleteJobPosting
+export async function deleteJobPosting(formData: FormData) {
+  // Removed prevState
+  console.log("Attempting to delete job posting...")
+  const supabase = createServerSupabaseClient()
+  const id = formData.get("id") as string
+
+  console.log("Received ID for deletion:", id)
+
+  if (!id) {
+    console.error("Delete Error: Job ID is missing.")
+    return {
+      success: false,
+      message: "Job ID is required for deletion.",
+    }
+  }
+
+  try {
+    const { error } = await supabase.from("job_postings").delete().eq("id", id)
+
+    if (error) {
+      console.error("Supabase delete error:", error.message)
+      console.error("Supabase delete error details:", error)
+      return {
+        success: false,
+        message: `Failed to delete job posting: ${error.message}.`,
+      }
+    }
+
+    console.log(`Job posting with ID ${id} deleted successfully.`)
+    revalidatePath("/advertisement")
+
+    return {
+      success: true,
+      message: "Job posting deleted successfully!",
+    }
+  } catch (error: any) {
+    console.error("Caught unexpected error during job posting deletion:", error)
+    return {
+      success: false,
+      message: `Failed to delete job posting: ${error.message || "An unexpected error occurred."}`,
     }
   }
 }
