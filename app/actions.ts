@@ -127,7 +127,11 @@ export async function addJobPosting(prevState: any, formData: FormData) {
 
     if (error) {
       console.error("Supabase insert error:", error)
-      throw new Error(error.message)
+      // Provide a more specific error message to the user
+      return {
+        success: false,
+        message: `Failed to submit job posting: ${error.message}. Please check your Supabase table schema.`,
+      }
     }
 
     console.log("New Job Posting Submitted to Supabase:", data)
@@ -162,7 +166,7 @@ export async function addJobPosting(prevState: any, formData: FormData) {
     console.error("Error adding job posting:", error)
     return {
       success: false,
-      message: `Failed to submit job posting: ${error.message || "Unknown error"}`,
+      message: `Failed to submit job posting: ${error.message || "An unexpected error occurred."}`,
     }
   }
 }
