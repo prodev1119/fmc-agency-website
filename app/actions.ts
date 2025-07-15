@@ -1,17 +1,8 @@
 "use server"
 
 import { Resend } from "resend"
-import { createServerSupabaseClient } from "@/lib/supabase" // Import server-side Supabase client
-import { revalidatePath } from "next/cache" // Import revalidatePath
 
-// Initialize Resend conditionally to avoid error if API key is missing
-let resend: Resend | null = null
-if (process.env.RESEND_API_KEY) {
-  resend = new Resend(process.env.RESEND_API_KEY)
-} else {
-  console.warn("RESEND_API_KEY is not set. Email sending functionality will be skipped.")
-}
-
+const resend = new Resend(process.env.RESEND_API_KEY)
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL || "thielecamden@gmail.com"
 
 export async function submitContactForm(prevState: any, formData: FormData) {
@@ -34,6 +25,8 @@ export async function submitContactForm(prevState: any, formData: FormData) {
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
   try {
+    // In a real application, you would send an email or save to a database here.
+    // For now, we'll just log the data and return a success message.
     console.log("Contact Form Submission:")
     console.log(`Name: ${firstName} ${lastName}`)
     console.log(`Email: ${email}`)
@@ -41,7 +34,11 @@ export async function submitContactForm(prevState: any, formData: FormData) {
     console.log(`Project Type: ${projectType}`)
     console.log(`Message: ${message}`)
 
-    if (resend && CONTACT_EMAIL) {
+    // Example of sending an email using Resend (requires RESEND_API_KEY and CONTACT_EMAIL env vars)
+    // You would need to set up these environment variables in your Vercel project settings.
+    // For local development, you can add them to a .env.local file.
+    // Learn more about Resend: https://resend.com/docs/send-emails
+    if (process.env.RESEND_API_KEY && process.env.CONTACT_EMAIL) {
       await resend.emails.send({
         from: "onboarding@resend.dev", // Replace with your verified Resend domain
         to: CONTACT_EMAIL,
@@ -56,7 +53,7 @@ export async function submitContactForm(prevState: any, formData: FormData) {
         `,
       })
     } else {
-      console.warn("Resend client not initialized or CONTACT_EMAIL not set. Email sending skipped for contact form.")
+      console.warn("RESEND_API_KEY or CONTACT_EMAIL not set. Email sending skipped.")
     }
 
     return {
@@ -73,8 +70,6 @@ export async function submitContactForm(prevState: any, formData: FormData) {
 }
 
 export async function addJobPosting(prevState: any, formData: FormData) {
-  const supabase = createServerSupabaseClient() // Initialize server-side Supabase client
-
   const title = formData.get("title") as string
   const type = formData.get("type") as string
   const intro = formData.get("intro") as string
@@ -108,34 +103,29 @@ export async function addJobPosting(prevState: any, formData: FormData) {
       title,
       type,
       intro,
-      responsibilities: responsibilities ? responsibilities.split(",").map((s) => s.trim()) : null, // Use null for empty arrays
-      requirements: requirements ? requirements.split(",").map((s) => s.trim()) : null,
-      role_overview: roleOverview || null, // Match database column name
+      responsibilities: responsibilities ? responsibilities.split(",").map((s) => s.trim()) : undefined,
+      requirements: requirements ? requirements.split(",").map((s) => s.trim()) : undefined,
+      roleOverview,
       compensation,
-      collaboration_plan: collaborationPlan ? collaborationPlan.split(",").map((s) => s.trim()) : null, // Match database column name
+      collaborationPlan: collaborationPlan ? collaborationPlan.split(",").map((s) => s.trim()) : undefined,
       timeline,
       summary,
-      note: note || null,
+      note,
       author,
-      icon_name: iconName, // Match database column name
+      iconName, // Store icon name as string
       color,
-      bg_color: bgColor, // Match database column name
+      bgColor,
     }
 
-    // Insert into Supabase
-    const { data, error } = await supabase.from("job_postings").insert([newJob]).select()
+    console.log("New Job Posting Submitted:", newJob)
 
-    if (error) {
-      console.error("Supabase insert error:", error)
-      throw new Error(error.message)
-    }
+    // In a real application, you would save this to a database.
+    // For example, if using Supabase:
+    // const { data, error } = await supabase.from('job_postings').insert([newJob]);
+    // if (error) throw error;
 
-    console.log("New Job Posting Submitted to Supabase:", data)
-
-    // Revalidate the advertisement page to show the new job
-    revalidatePath("/advertisement")
-
-    if (resend && CONTACT_EMAIL) {
+    // You could also send an email notification to an admin about the new job
+    if (process.env.RESEND_API_KEY && process.env.CONTACT_EMAIL) {
       await resend.emails.send({
         from: "onboarding@resend.dev", // Replace with your verified Resend domain
         to: CONTACT_EMAIL,
@@ -147,22 +137,22 @@ export async function addJobPosting(prevState: any, formData: FormData) {
           <p><strong>Intro:</strong> ${intro}</p>
           <p><strong>Compensation:</strong> ${compensation}</p>
           <p><strong>Author:</strong> ${author}</p>
-          <p>Check the Supabase dashboard for full details.</p>
+          <p>Check the console for full details.</p>
         `,
       })
     } else {
-      console.warn("Resend client not initialized or CONTACT_EMAIL not set. Email notification for new job skipped.")
+      console.warn("RESEND_API_KEY or CONTACT_EMAIL not set. Email notification for new job skipped.")
     }
 
     return {
       success: true,
-      message: "Job posting submitted successfully and added to the page!",
+      message: "Job posting submitted successfully! (Note: For persistence, a database is required.)",
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error adding job posting:", error)
     return {
       success: false,
-      message: `Failed to submit job posting: ${error.message || "Unknown error"}`,
+      message: "Failed to submit job posting. Please try again.",
     }
   }
 }
