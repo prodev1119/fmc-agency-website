@@ -1,3 +1,5 @@
+"use client" // This component needs to be a Client Component to use useActionState
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -5,8 +7,15 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Mail, Globe, Users, Briefcase, GraduationCap, Send, MessageSquare } from "lucide-react"
 import Image from "next/image"
+import { useActionState } from "react" // Import useActionState
+import { submitContactForm } from "@/app/actions" // Import the Server Action
 
 export default function AboutPage() {
+  const [state, formAction, isPending] = useActionState(submitContactForm, {
+    success: false,
+    message: "",
+  })
+
   return (
     <div className="min-h-screen py-20">
       <div className="container mx-auto px-4">
@@ -195,37 +204,64 @@ export default function AboutPage() {
                   <CardDescription>Fill out the form below and we'll get back to you within 24 hours.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form className="space-y-4">
+                  <form action={formAction} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-sm font-medium mb-2 block">First Name</label>
-                        <Input placeholder="John" />
+                        <label htmlFor="firstName" className="text-sm font-medium mb-2 block">
+                          First Name
+                        </label>
+                        <Input id="firstName" name="firstName" placeholder="John" required />
                       </div>
                       <div>
-                        <label className="text-sm font-medium mb-2 block">Last Name</label>
-                        <Input placeholder="Doe" />
+                        <label htmlFor="lastName" className="text-sm font-medium mb-2 block">
+                          Last Name
+                        </label>
+                        <Input id="lastName" name="lastName" placeholder="Doe" required />
                       </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Email</label>
-                      <Input type="email" placeholder="john@example.com" />
+                      <label htmlFor="email" className="text-sm font-medium mb-2 block">
+                        Email
+                      </label>
+                      <Input id="email" name="email" type="email" placeholder="john@example.com" required />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Company</label>
-                      <Input placeholder="Your Company Name" />
+                      <label htmlFor="company" className="text-sm font-medium mb-2 block">
+                        Company
+                      </label>
+                      <Input id="company" name="company" placeholder="Your Company Name" />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Project Type</label>
-                      <Input placeholder="AI Chatbot, Automation, etc." />
+                      <label htmlFor="projectType" className="text-sm font-medium mb-2 block">
+                        Project Type
+                      </label>
+                      <Input id="projectType" name="projectType" placeholder="AI Chatbot, Automation, etc." />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Message</label>
-                      <Textarea placeholder="Tell us about your project and how we can help..." rows={4} />
+                      <label htmlFor="message" className="text-sm font-medium mb-2 block">
+                        Message
+                      </label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        placeholder="Tell us about your project and how we can help..."
+                        rows={4}
+                        required
+                      />
                     </div>
-                    <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
+                    <Button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                      disabled={isPending}
+                    >
                       <Send className="h-4 w-4 mr-2" />
-                      Send Message
+                      {isPending ? "Sending..." : "Send Message"}
                     </Button>
+                    {state?.message && (
+                      <p className={`mt-4 text-center text-sm ${state.success ? "text-green-600" : "text-red-600"}`}>
+                        {state.message}
+                      </p>
+                    )}
                   </form>
                 </CardContent>
               </Card>

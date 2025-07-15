@@ -16,6 +16,7 @@ export default function Navigation() {
     { href: "/projects", label: "Projects" },
     { href: "/business", label: "Business" },
     { href: "/about", label: "About Us" },
+    { href: "/advertisement", label: "Join Us" }, // Added new navigation item
   ]
 
   return (
