@@ -1,8 +1,17 @@
 "use server"
 
 import { Resend } from "resend"
+import { createServerSupabaseClient } from "@/lib/supabase" // Import server-side Supabase client
+import { revalidatePath } from "next/cache" // Import revalidatePath
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Initialize Resend conditionally to avoid error if API key is missing
+let resend: Resend | null = null
+if (process.env.RESEND_API_KEY) {
+  resend = new Resend(process.env.RESEND_API_KEY)
+} else {
+  console.warn("RESEND_API_KEY is not set. Email sending functionality will be skipped.")
+}
+
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL || "thielecamden@gmail.com"
 
 export async function submitContactForm(prevState: any, formData: FormData) {
@@ -25,8 +34,6 @@ export async function submitContactForm(prevState: any, formData: FormData) {
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
   try {
-    // In a real application, you would send an email or save to a database here.
-    // For now, we'll just log the data and return a success message.
     console.log("Contact Form Submission:")
     console.log(`Name: ${firstName} ${lastName}`)
     console.log(`Email: ${email}`)
@@ -34,11 +41,7 @@ export async function submitContactForm(prevState: any, formData: FormData) {
     console.log(`Project Type: ${projectType}`)
     console.log(`Message: ${message}`)
 
-    // Example of sending an email using Resend (requires RESEND_API_KEY and CONTACT_EMAIL env vars)
-    // You would need to set up these environment variables in your Vercel project settings.
-    // For local development, you can add them to a .env.local file.
-    // Learn more about Resend: https://resend.com/docs/send-emails
-    if (process.env.RESEND_API_KEY && process.env.CONTACT_EMAIL) {
+    if (resend && CONTACT_EMAIL) {
       await resend.emails.send({
         from: "onboarding@resend.dev", // Replace with your verified Resend domain
         to: CONTACT_EMAIL,
@@ -53,7 +56,7 @@ export async function submitContactForm(prevState: any, formData: FormData) {
         `,
       })
     } else {
-      console.warn("RESEND_API_KEY or CONTACT_EMAIL not set. Email sending skipped.")
+      console.warn("Resend client not initialized or CONTACT_EMAIL not set. Email sending skipped for contact form.")
     }
 
     return {
@@ -70,6 +73,8 @@ export async function submitContactForm(prevState: any, formData: FormData) {
 }
 
 export async function addJobPosting(prevState: any, formData: FormData) {
+  const supabase = createServerSupabaseClient() // Initialize server-side Supabase client
+
   const title = formData.get("title") as string
   const type = formData.get("type") as string
   const intro = formData.get("intro") as string
@@ -86,12 +91,12 @@ export async function addJobPosting(prevState: any, formData: FormData) {
   const color = formData.get("color") as string
   const bgColor = formData.get("bgColor") as string
 
-  // Basic validation
-  if (!title || !intro || !compensation || !timeline || !summary || !author || !iconName || !color || !bgColor) {
+  // Basic validation - only title, intro, compensation, timeline, author, icon, color, bgColor are required
+  if (!title || !intro || !compensation || !timeline || !author || !iconName || !color || !bgColor) {
     return {
       success: false,
       message:
-        "Please fill in all required fields (Title, Intro, Compensation, Timeline, Summary, Author, Icon, Color, Background Color).",
+        "Please fill in all required fields (Title, Intro, Compensation, Timeline, Author, Icon, Color, Background Color).",
     }
   }
 
@@ -103,29 +108,34 @@ export async function addJobPosting(prevState: any, formData: FormData) {
       title,
       type,
       intro,
-      responsibilities: responsibilities ? responsibilities.split(",").map((s) => s.trim()) : undefined,
-      requirements: requirements ? requirements.split(",").map((s) => s.trim()) : undefined,
-      roleOverview,
+      responsibilities: responsibilities || null, // Store as string or null
+      requirements: requirements || null, // Store as string or null
+      role_overview: roleOverview || null, // Match database column name
       compensation,
-      collaborationPlan: collaborationPlan ? collaborationPlan.split(",").map((s) => s.trim()) : undefined,
+      collaboration_plan: collaborationPlan || null, // Store as string or null
       timeline,
-      summary,
-      note,
+      summary: summary || null, // Store as string or null
+      note: note || null,
       author,
-      iconName, // Store icon name as string
+      icon_name: iconName, // Match database column name
       color,
-      bgColor,
+      bg_color: bgColor, // Match database column name
     }
 
-    console.log("New Job Posting Submitted:", newJob)
+    // Insert into Supabase
+    const { data, error } = await supabase.from("job_postings").insert([newJob]).select()
 
-    // In a real application, you would save this to a database.
-    // For example, if using Supabase:
-    // const { data, error } = await supabase.from('job_postings').insert([newJob]);
-    // if (error) throw error;
+    if (error) {
+      console.error("Supabase insert error:", error)
+      throw new Error(error.message)
+    }
 
-    // You could also send an email notification to an admin about the new job
-    if (process.env.RESEND_API_KEY && process.env.CONTACT_EMAIL) {
+    console.log("New Job Posting Submitted to Supabase:", data)
+
+    // Revalidate the advertisement page to show the new job
+    revalidatePath("/advertisement")
+
+    if (resend && CONTACT_EMAIL) {
       await resend.emails.send({
         from: "onboarding@resend.dev", // Replace with your verified Resend domain
         to: CONTACT_EMAIL,
@@ -137,22 +147,22 @@ export async function addJobPosting(prevState: any, formData: FormData) {
           <p><strong>Intro:</strong> ${intro}</p>
           <p><strong>Compensation:</strong> ${compensation}</p>
           <p><strong>Author:</strong> ${author}</p>
-          <p>Check the console for full details.</p>
+          <p>Check the Supabase dashboard for full details.</p>
         `,
       })
     } else {
-      console.warn("RESEND_API_KEY or CONTACT_EMAIL not set. Email notification for new job skipped.")
+      console.warn("Resend client not initialized or CONTACT_EMAIL not set. Email notification for new job skipped.")
     }
 
     return {
       success: true,
-      message: "Job posting submitted successfully! (Note: For persistence, a database is required.)",
+      message: "Job posting submitted successfully and added to the page!",
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error adding job posting:", error)
     return {
       success: false,
-      message: "Failed to submit job posting. Please try again.",
+      message: `Failed to submit job posting: ${error.message || "Unknown error"}`,
     }
   }
 }

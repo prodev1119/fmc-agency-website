@@ -68,7 +68,7 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="responsibilities" className="text-sm font-medium mb-2 block">
-                  Key Responsibilities (comma-separated)
+                  Key Responsibilities
                 </label>
                 <Textarea
                   id="responsibilities"
@@ -80,7 +80,7 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="requirements" className="text-sm font-medium mb-2 block">
-                  Requirements (comma-separated)
+                  Requirements
                 </label>
                 <Textarea
                   id="requirements"
@@ -111,7 +111,7 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="collaborationPlan" className="text-sm font-medium mb-2 block">
-                  Collaboration Plan (comma-separated)
+                  Collaboration Plan
                 </label>
                 <Textarea
                   id="collaborationPlan"
@@ -130,15 +130,9 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="summary" className="text-sm font-medium mb-2 block">
-                  Summary <span className="text-red-500">*</span>
+                  Summary
                 </label>
-                <Textarea
-                  id="summary"
-                  name="summary"
-                  placeholder="A concluding summary for applicants..."
-                  rows={2}
-                  required
-                />
+                <Textarea id="summary" name="summary" placeholder="A concluding summary for applicants..." rows={2} />
               </div>
 
               <div>
