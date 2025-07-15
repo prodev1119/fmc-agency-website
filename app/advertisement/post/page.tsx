@@ -22,7 +22,7 @@ export default function PostJobPage() {
   useEffect(() => {
     if (state?.success) {
       // Optionally redirect or clear form after success
-      // router.push('/advertisement') // Uncomment to redirect
+      router.push("/advertisement") // Uncomment this line
       // You might want to clear the form fields here if not redirecting
     }
   }, [state?.success, router])
@@ -48,7 +48,7 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="type" className="text-sm font-medium mb-2 block">
-                  Job Type
+                  Job Type (Optional)
                 </label>
                 <Input id="type" name="type" placeholder="e.g., Remote, Hybrid, On-site" defaultValue="Remote" />
               </div>
@@ -68,7 +68,7 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="responsibilities" className="text-sm font-medium mb-2 block">
-                  Key Responsibilities
+                  Key Responsibilities (Optional)
                 </label>
                 <Textarea
                   id="responsibilities"
@@ -80,7 +80,7 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="requirements" className="text-sm font-medium mb-2 block">
-                  Requirements
+                  Requirements (Optional)
                 </label>
                 <Textarea
                   id="requirements"
@@ -92,7 +92,7 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="roleOverview" className="text-sm font-medium mb-2 block">
-                  Role Overview
+                  Role Overview (Optional)
                 </label>
                 <Textarea
                   id="roleOverview"
@@ -111,7 +111,7 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="collaborationPlan" className="text-sm font-medium mb-2 block">
-                  Collaboration Plan
+                  Collaboration Plan (Optional)
                 </label>
                 <Textarea
                   id="collaborationPlan"
@@ -130,14 +130,14 @@ export default function PostJobPage() {
 
               <div>
                 <label htmlFor="summary" className="text-sm font-medium mb-2 block">
-                  Summary
+                  Summary (Optional)
                 </label>
                 <Textarea id="summary" name="summary" placeholder="A concluding summary for applicants..." rows={2} />
               </div>
 
               <div>
                 <label htmlFor="note" className="text-sm font-medium mb-2 block">
-                  Note
+                  Note (Optional)
                 </label>
                 <Textarea id="note" name="note" placeholder="Any additional notes or disclaimers..." rows={2} />
               </div>
