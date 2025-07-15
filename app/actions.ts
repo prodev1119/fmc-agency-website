@@ -170,3 +170,47 @@ export async function addJobPosting(prevState: any, formData: FormData) {
     }
   }
 }
+
+export async function deleteJobPosting(prevState: any, formData: FormData) {
+  console.log("Attempting to delete job posting...")
+  const supabase = createServerSupabaseClient()
+  const id = formData.get("id") as string
+
+  console.log("Received ID for deletion:", id)
+
+  if (!id) {
+    console.error("Delete Error: Job ID is missing.")
+    return {
+      success: false,
+      message: "Job ID is required for deletion.",
+    }
+  }
+
+  try {
+    const { error } = await supabase.from("job_postings").delete().eq("id", id)
+
+    if (error) {
+      console.error("Supabase delete error:", error.message)
+      // Log the full error object for more details
+      console.error("Supabase delete error details:", error)
+      return {
+        success: false,
+        message: `Failed to delete job posting: ${error.message}.`,
+      }
+    }
+
+    console.log(`Job posting with ID ${id} deleted successfully.`)
+    revalidatePath("/advertisement") // Revalidate the page to show updated list
+
+    return {
+      success: true,
+      message: "Job posting deleted successfully!",
+    }
+  } catch (error: any) {
+    console.error("Caught unexpected error during job posting deletion:", error)
+    return {
+      success: false,
+      message: `Failed to delete job posting: ${error.message || "An unexpected error occurred."}`,
+    }
+  }
+}
