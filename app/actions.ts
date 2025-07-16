@@ -1,7 +1,7 @@
 "use server"
 
 import { Resend } from "resend"
-import { createServerSupabaseClient } from "@/lib/supabase"
+import { supabase } from "@/lib/supabase" // Changed import: import { supabase } directly
 import { revalidatePath } from "next/cache"
 
 // Initialize Resend conditionally to avoid error if API key is missing
@@ -73,8 +73,8 @@ export async function submitContactForm(prevState: any, formData: FormData) {
 }
 
 export async function addJobPosting(prevState: any, formData: FormData) {
-  const supabase = createServerSupabaseClient() // Initialize server-side Supabase client
-
+  // const supabase = createServerSupabaseClient() // REMOVE THIS LINE
+  // Use the directly imported 'supabase'
   const title = formData.get("title") as string
   const type = formData.get("type") as string
   const intro = formData.get("intro") as string
@@ -172,7 +172,8 @@ export async function addJobPosting(prevState: any, formData: FormData) {
 }
 
 export async function updateJobPosting(prevState: any, formData: FormData) {
-  const supabase = createServerSupabaseClient()
+  // const supabase = createServerSupabaseClient() // REMOVE THIS LINE
+  // Use the directly imported 'supabase'
 
   const id = formData.get("id") as string
   const title = formData.get("title") as string
@@ -250,7 +251,8 @@ export async function updateJobPosting(prevState: any, formData: FormData) {
 export async function deleteJobPosting(formData: FormData) {
   // Removed prevState
   console.log("Attempting to delete job posting...")
-  const supabase = createServerSupabaseClient()
+  // const supabase = createServerSupabaseClient() // REMOVE THIS LINE
+  // Use the directly imported 'supabase'
   const id = formData.get("id") as string
 
   console.log("Received ID for deletion:", id)
