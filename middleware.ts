@@ -3,11 +3,10 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export async function middleware(req: NextRequest) {
+  console.log("Middleware: Running...")
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
-  // Refresh session if expired - required for Server Components
-  // and to ensure the client-side has the latest session.
   await supabase.auth.getSession()
 
   return res
