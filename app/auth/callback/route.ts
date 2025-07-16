@@ -12,5 +12,6 @@ export async function GET(request: Request) {
   }
 
   // URL to redirect to after sign in process completes
+  // This will trigger the middleware on the next request to the origin
   return NextResponse.redirect(requestUrl.origin)
 }
