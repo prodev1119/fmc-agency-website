@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description:
     "Transform your business with cutting-edge AI solutions, automation, and cloud architectures. Based in Fort Myers, FL, serving US clients nationwide.",
   keywords: "AI development, machine learning, automation, chatbots, computer vision, cloud solutions, Fort Myers",
+  icons: {
+    icon: "/images/fmc-logo.png", // Add this line for the favicon
+  },
     generator: 'v0.dev'
 }
 
