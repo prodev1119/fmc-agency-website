@@ -3,15 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Briefcase, DollarSign, CalendarDays, Star, PlusCircle, Trash2, Pencil } from "lucide-react"
 import Link from "next/link"
-import { createServerSupabaseClient } from "@/lib/supabase" // Import server-side Supabase client
+import { supabase } from "@/lib/supabase" // Changed import: import { supabase } directly
 import { iconMap } from "@/lib/icons" // Import iconMap
 import { deleteJobPosting } from "@/app/actions" // Add this line
 
 export default async function AdvertisementPage() {
-  // Make it an async function
-  const supabase = createServerSupabaseClient()
+  // The supabase client is now directly imported, no need to call a function
+  // const supabase = createServerSupabaseClient() // REMOVE THIS LINE
 
-  const { data: jobPostings, error } = await supabase
+  const { data: jobPostings, error } = await supabase // Use the directly imported 'supabase'
     .from("job_postings")
     .select("*")
     .order("created_at", { ascending: false })
