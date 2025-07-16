@@ -10,8 +10,14 @@ export function createClientSupabaseClient() {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseAnonKey) {
+      // This error should ideally be caught during development setup
+      // or handled gracefully in production, e.g., by disabling auth features.
+      console.error(
+        "Missing Supabase environment variables for client-side. Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.",
+      )
+      // Fallback to a dummy client or throw, depending on desired behavior
       throw new Error(
-        "Missing Supabase environment variables. Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.",
+        "Supabase client not initialized: Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY.",
       )
     }
     supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)

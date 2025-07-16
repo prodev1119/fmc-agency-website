@@ -15,19 +15,21 @@ export default function Navigation() {
   const supabase = createClientSupabaseClient()
 
   useEffect(() => {
+    // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null)
     })
 
-    // Initial check for session
+    // Initial check for session on component mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null)
     })
 
+    // Cleanup listener on component unmount
     return () => {
       authListener.unsubscribe()
     }
-  }, [supabase])
+  }, [supabase]) // Dependency array includes supabase to re-run if client changes (though it's a singleton)
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
