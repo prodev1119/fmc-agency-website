@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation" // Import redirect
 import EditJobForm from "@/components/edit-job-form"
 import type { JobPosting } from "@/data/job-postings" // Import the type
 
@@ -10,10 +10,18 @@ interface EditJobPageProps {
 }
 
 export default async function EditJobPage({ params }: EditJobPageProps) {
-  const supabase = createServerSupabaseClient()
+  const supabaseServer = createServerSupabaseClient() // Use server-side client for data fetching
   const { id } = params
 
-  const { data: jobPosting, error } = await supabase.from("job_postings").select("*").eq("id", id).single()
+  // Server-side check for authentication
+  const {
+    data: { session },
+  } = await supabaseServer.auth.getSession()
+  if (!session) {
+    redirect("/login") // Redirect to login if not authenticated
+  }
+
+  const { data: jobPosting, error } = await supabaseServer.from("job_postings").select("*").eq("id", id).single()
 
   if (error || !jobPosting) {
     console.error("Error fetching job posting for edit:", error)

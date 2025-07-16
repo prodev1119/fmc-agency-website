@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js"
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs" // Import for server actions
+import { cookies } from "next/headers" // Import cookies
 
 // Create a single Supabase client for server-side operations
 // This client can bypass Row Level Security (RLS) if using the service_role_key
@@ -13,5 +14,7 @@ export function createServerSupabaseClient() {
     )
   }
 
-  return createClient(supabaseUrl, supabaseServiceRoleKey)
+  // Use createRouteHandlerClient for Server Actions to handle cookies correctly
+  // This ensures the session is properly managed for authenticated users
+  return createRouteHandlerClient({ cookies })
 }

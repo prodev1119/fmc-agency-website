@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { availableIcons, iconMap } from "@/lib/icons"
 import { PlusCircle, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react" // Import useState
+import { createClientSupabaseClient } from "@/lib/supabase-client" // Import client-side Supabase client
 
 export default function PostJobPage() {
   const [state, formAction, isPending] = useActionState(addJobPosting, {
@@ -18,14 +19,51 @@ export default function PostJobPage() {
     message: "",
   })
   const router = useRouter()
+  const supabase = createClientSupabaseClient()
+  const [loadingAuth, setLoadingAuth] = useState(true) // New state for auth loading
+  const [user, setUser] = useState<any>(null) // New state for user
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (!session) {
+        router.push("/login") // Redirect to login if no session
+      } else {
+        setUser(session.user)
+        setLoadingAuth(false)
+      }
+    }
+    checkUser()
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.push("/login")
+      } else {
+        setUser(session.user)
+      }
+    })
+
+    return () => {
+      authListener.unsubscribe()
+    }
+  }, [router, supabase])
 
   useEffect(() => {
     if (state?.success) {
-      // Optionally redirect or clear form after success
-      router.push("/advertisement") // Uncomment this line
-      // You might want to clear the form fields here if not redirecting
+      router.push("/advertisement") // Redirect to the job listings page on success
     }
   }, [state?.success, router])
+
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+        <span className="ml-2 text-gray-600">Loading authentication...</span>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen py-20 bg-gray-50">

@@ -1,13 +1,38 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Menu, X } from "lucide-react"
+import { Menu, X, LogIn, LogOut } from "lucide-react"
+import { createClientSupabaseClient } from "@/lib/supabase-client" // Import client-side Supabase client
+import { useRouter } from "next/navigation"
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState<any>(null) // State to hold user session
+  const router = useRouter()
+  const supabase = createClientSupabaseClient()
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+    })
+
+    // Initial check for session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null)
+    })
+
+    return () => {
+      authListener.unsubscribe()
+    }
+  }, [supabase])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push("/") // Redirect to home page after logout
+  }
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -16,7 +41,7 @@ export default function Navigation() {
     { href: "/projects", label: "Projects" },
     { href: "/business", label: "Business" },
     { href: "/about", label: "About Us" },
-    { href: "/advertisement", label: "Join Us" }, // Added new navigation item
+    { href: "/advertisement", label: "Join Us" },
   ]
 
   return (
@@ -42,6 +67,23 @@ export default function Navigation() {
                 {item.label}
               </Link>
             ))}
+            {!user ? (
+              <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
+                <Link href="/login" className="flex items-center">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="border-purple-600 text-purple-600 hover:bg-purple-50 bg-transparent"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            )}
             <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
               <Link href="/about#contact">Contact Us</Link>
             </Button>
@@ -69,6 +111,26 @@ export default function Navigation() {
                   {item.label}
                 </Link>
               ))}
+              {!user ? (
+                <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 mx-2">
+                  <Link href="/login" className="flex items-center" onClick={() => setIsOpen(false)}>
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Login
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    handleLogout()
+                    setIsOpen(false)
+                  }}
+                  variant="outline"
+                  className="border-purple-600 text-purple-600 hover:bg-purple-50 mx-2"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              )}
               <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 mx-2">
                 <Link href="/about#contact" onClick={() => setIsOpen(false)}>
                   Contact Us
