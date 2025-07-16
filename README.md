@@ -110,4 +110,4 @@ pnpm start
 ---
 
 ## 📝 License
-This project is proprietary. Contact us for licensing or partnership opportunities!
+This project is proprietary. Contact us for licensing or partnership opportunities.
