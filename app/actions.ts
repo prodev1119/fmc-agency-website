@@ -171,6 +171,81 @@ export async function addJobPosting(prevState: any, formData: FormData) {
   }
 }
 
+export async function updateJobPosting(prevState: any, formData: FormData) {
+  const supabase = createServerSupabaseClient()
+
+  const id = formData.get("id") as string
+  const title = formData.get("title") as string
+  const type = formData.get("type") as string
+  const intro = formData.get("intro") as string
+  const responsibilities = formData.get("responsibilities") as string
+  const requirements = formData.get("requirements") as string
+  const roleOverview = formData.get("roleOverview") as string
+  const compensation = formData.get("compensation") as string
+  const collaborationPlan = formData.get("collaborationPlan") as string
+  const timeline = formData.get("timeline") as string
+  const summary = formData.get("summary") as string
+  const note = formData.get("note") as string
+  const author = formData.get("author") as string
+  const iconName = formData.get("iconName") as string
+  const color = formData.get("color") as string
+  const bgColor = formData.get("bgColor") as string
+
+  if (!id || !title || !intro || !compensation || !timeline || !author || !iconName || !color || !bgColor) {
+    return {
+      success: false,
+      message:
+        "Please fill in all required fields (ID, Title, Intro, Compensation, Timeline, Author, Icon, Color, Background Color).",
+    }
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 1500))
+
+  try {
+    const updatedJob = {
+      title,
+      type: type || null,
+      intro,
+      responsibilities: responsibilities || null,
+      requirements: requirements || null,
+      role_overview: roleOverview || null,
+      compensation,
+      collaboration_plan: collaborationPlan || null,
+      timeline,
+      summary: summary || null,
+      note: note || null,
+      author,
+      icon_name: iconName,
+      color,
+      bg_color: bgColor,
+    }
+
+    const { data, error } = await supabase.from("job_postings").update(updatedJob).eq("id", id).select()
+
+    if (error) {
+      console.error("Supabase update error:", error)
+      return {
+        success: false,
+        message: `Failed to update job posting: ${error.message}. Please check your Supabase table schema.`,
+      }
+    }
+
+    console.log("Job Posting Updated in Supabase:", data)
+    revalidatePath("/advertisement")
+
+    return {
+      success: true,
+      message: "Job posting updated successfully!",
+    }
+  } catch (error: any) {
+    console.error("Error updating job posting:", error)
+    return {
+      success: false,
+      message: `Failed to update job posting: ${error.message || "An unexpected error occurred."}`,
+    }
+  }
+}
+
 // Corrected signature for deleteJobPosting
 export async function deleteJobPosting(formData: FormData) {
   // Removed prevState

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Briefcase, DollarSign, CalendarDays, Star, PlusCircle, Trash2 } from "lucide-react"
+import { Briefcase, DollarSign, CalendarDays, Star, PlusCircle, Trash2, Pencil } from "lucide-react"
 import Link from "next/link"
 import { createServerSupabaseClient } from "@/lib/supabase" // Import server-side Supabase client
 import { iconMap } from "@/lib/icons" // Import iconMap
@@ -154,13 +154,21 @@ export default async function AdvertisementPage() {
                     )}
 
                     <div className="text-right text-xs text-gray-500">Best regards, {job.author}</div>
-                    <form action={deleteJobPosting} className="mt-4 flex justify-end">
-                      <input type="hidden" name="id" value={job.id} />
-                      <Button type="submit" variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Remove
-                      </Button>
-                    </form>
+                    <div className="mt-4 flex justify-end gap-2">
+                      <Link href={`/advertisement/edit/${job.id}`}>
+                        <Button variant="outline" size="sm">
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                      </Link>
+                      <form action={deleteJobPosting}>
+                        <input type="hidden" name="id" value={job.id} />
+                        <Button type="submit" variant="destructive" size="sm">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Remove
+                        </Button>
+                      </form>
+                    </div>
                   </CardContent>
                 </Card>
               )
