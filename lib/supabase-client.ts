@@ -1,4 +1,4 @@
-import { createBrowserClient } from "@supabase/ssr"
+import { createBrowserClient } from "@supabase/ssr" // Changed import
 
 // Create a single Supabase client for client-side operations
 // This client uses the public anon key and respects Row Level Security (RLS).

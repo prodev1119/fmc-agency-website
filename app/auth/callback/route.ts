@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
+import { createRouteHandlerClient } from "@supabase/ssr" // Changed import
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
@@ -12,6 +12,5 @@ export async function GET(request: Request) {
   }
 
   // URL to redirect to after sign in process completes
-  // This will trigger the middleware on the next request to the origin
   return NextResponse.redirect(requestUrl.origin)
 }
