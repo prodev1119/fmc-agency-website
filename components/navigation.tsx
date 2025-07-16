@@ -12,28 +12,44 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<any>(null) // State to hold user session
   const router = useRouter()
-  const supabase = createClientSupabaseClient()
+  const supabase = createClientSupabaseClient() // Initialize client here
 
   useEffect(() => {
-    // Listen for auth state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null)
-    })
+    console.log("Navigation useEffect: Running...")
 
     // Initial check for session on component mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        console.log("Navigation useEffect: Initial session check. Session:", session)
+        setUser(session?.user || null)
+      })
+      .catch((err) => {
+        console.error("Navigation useEffect: Error getting initial session:", err)
+      })
+
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Navigation useEffect: Auth state changed. Event:", _event, "Session:", session)
       setUser(session?.user || null)
     })
 
     // Cleanup listener on component unmount
     return () => {
+      console.log("Navigation useEffect: Cleaning up auth listener.")
       authListener.unsubscribe()
     }
   }, [supabase]) // Dependency array includes supabase to re-run if client changes (though it's a singleton)
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push("/") // Redirect to home page after logout
+    console.log("Logout button clicked.")
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error("Error during logout:", error.message)
+    } else {
+      console.log("Successfully logged out.")
+      router.push("/") // Redirect to home page after logout
+    }
   }
 
   const navItems = [
@@ -45,6 +61,8 @@ export default function Navigation() {
     { href: "/about", label: "About Us" },
     { href: "/advertisement", label: "Join Us" },
   ]
+
+  console.log("Navigation Render: Current user state:", user)
 
   return (
     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
